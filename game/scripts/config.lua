@@ -57,6 +57,36 @@ local Config = {
         OneHit = false,
         P1GodMode = false,
         P2GodMode = false,
+    },
+
+    -- Revive System Configuration
+    ReviveSystem = {
+        -- Enable/disable the revive system
+        Enabled = true,
+
+        -- Time in seconds required to revive a downed player
+        ReviveTime = 3.0,
+
+        -- Percentage of max health restored when revived (0.5 = 50%)
+        ReviveHealthPercent = 0.5,
+
+        -- Duration in seconds of invulnerability after being revived
+        InvulnerabilityDuration = 3.0,
+
+        -- Cooldown in seconds before a player can revive again
+        ReviveCooldownPerPlayer = 30.0,
+
+        -- Maximum number of revives per room (nil = unlimited)
+        MaxRevivesPerRoom = nil,
+
+        -- Whether to interrupt revival when reviver takes damage
+        InterruptOnDamage = true,
+
+        -- Whether to interrupt revival when players are too far apart
+        InterruptOnDistance = true,
+
+        -- Maximum distance (in game units) before revival is interrupted
+        MaxInterruptDistance = 300,
     }
 }
 

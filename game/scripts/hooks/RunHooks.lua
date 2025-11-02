@@ -29,6 +29,8 @@ local HeroEx = ModRequire "../HeroEx.lua"
 local CoopControl = ModRequire "../CoopControl.lua"
 ---@type GameFlags
 local GameFlags = ModRequire "../GameFlags.lua"
+---@type ReviveSystem
+local ReviveSystem = ModRequire "../ReviveSystem.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -90,6 +92,11 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
     if not HeroContext.GetDefaultHero() then
         HeroContext.InitRunHook()
         CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
+    end
+
+    -- Reset revive system for new room
+    if ReviveSystem then
+        ReviveSystem.OnRoomStart()
     end
 
     if currentRoom.RoomSetName == "Surface" then
@@ -222,6 +229,29 @@ end
 
 ---@private
 function RunHooks.KillHeroHook(baseFun, ...)
+    local dyingPlayerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
+
+    -- Check if player should enter downed state BEFORE marking as dead
+    if dyingPlayerId and ReviveSystem and ReviveSystem.ShouldEnterDownedState(dyingPlayerId, CurrentRun.Hero) then
+        -- Player can be revived - enter downed state instead of dying
+        CurrentRun.Hero.IsDead = true
+
+        ReviveSystem.OnPlayerDeath(dyingPlayerId, CurrentRun.Hero)
+        ReviveSystem.EnterDownedState(dyingPlayerId, CurrentRun.Hero)
+
+        -- Switch camera to alive player if main player is downed
+        local aliveHeroes = CoopPlayers.GetAliveHeroes()
+        if #aliveHeroes > 0 and CurrentRun.Hero == CoopPlayers.GetMainHero() then
+            local aliveHero = aliveHeroes[1]
+            HeroContext.SetDefaultHero(aliveHero)
+            HeroContext.RunWithHeroContext(aliveHero, EnemyAiHooks.RefreshAI)
+        end
+
+        -- CRITICAL: Don't call base death function - player stays visible for revival
+        return
+    end
+
+    -- Original death logic - no revival possible
     CurrentRun.Hero.IsDead = true
     if not CoopPlayers.HasAlivePlayers() then
         -- Handle death for player 1 only

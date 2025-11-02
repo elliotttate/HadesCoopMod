@@ -74,7 +74,11 @@ function HookUtils.wrap(funcName, handler)
     local original = _G[funcName]
 
     if not original then
-        error("Cannot wrap function: " .. tostring(funcName))
+        -- Avoid crashing if the function isn't loaded yet in this context
+        if DebugPrint then
+            DebugPrint({ Text = "[HOOKS] wrap skipped; function not found: " .. tostring(funcName) })
+        end
+        return
     end
 
     _G[funcName] = function(...)

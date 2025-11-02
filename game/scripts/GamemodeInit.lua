@@ -34,6 +34,10 @@ local ResourceLoadingHooks = ModRequire "hooks/ResourceLoadingHooks.lua"
 ---@type ILootDelivery
 local LootDelivery = ModRequire "loot/LootInterface.lua"
 
+-- Load ReviveSystem
+---@type ReviveSystem
+local ReviveSystem = ModRequire "ReviveSystem.lua"
+
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
 ModRequire "hooks/ControlHooks.lua"
@@ -63,6 +67,11 @@ local function TryInstalBasicHooks()
     VulnerabilityHooks.InitHooks()
     ResourceLoadingHooks.InitHooks()
     LootDelivery.InitHooks()
+
+    -- Initialize ReviveSystem
+    if ReviveSystem then
+        ReviveSystem.InitHooks()
+    end
 end
 
 OnPreThingCreation
